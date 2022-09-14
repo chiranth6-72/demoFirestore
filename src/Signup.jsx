@@ -8,9 +8,13 @@ import {
   addDoc,
 } from "firebase/firestore";
 
-import app from "../src/Firebase.jsx";
+import { auth } from "../src/Firebase.jsx";
 
 import "./signup.css";
+import {
+  createUserWithEmailAndPassword,
+} from "firebase/auth";
+import { async } from "@firebase/util";
 
 // Firestore
 const db = getFirestore();
@@ -29,7 +33,6 @@ const colRef = collection(db, "Participant");
 //   })
 //   .catch((err) => console.log(err.message));
 
-
 const Signup = () => {
   const [name, setName] = useState("");
   const [contact, setContact] = useState("");
@@ -38,8 +41,10 @@ const Signup = () => {
   const [city, setCity] = useState("");
   const [state, setState] = useState("");
   const [stay, setStay] = useState("");
+  const [password, setPassword] = useState("");
   // const [count, setCount] = useState(2000);
 
+  const formRef = useRef(null);
   const nameRef = useRef(null);
   const contactRef = useRef(null);
   const emailRef = useRef(null);
@@ -48,57 +53,41 @@ const Signup = () => {
   const stateRef = useRef(null);
   const stayRef = useRef(null);
 
-  const handleInputChange = (e) => {
-    const { id, value } = e.target;
 
-    switch (id) {
-      case "name":
-        setName(value);
-        break;
-      case "contact":
-        setContact(value);
-        break;
-      case "email":
-        setEmail(value);
-        break;
-      case "college":
-        setCollege(value);
-        break;
-      case "city":
-        setCity(value);
-        break;
-      case "state":
-        setState(value);
-        break;
-      case "stay":
-        setStay(value);
-        break;
-    }
-  };
-  const reg = useRef(null);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-  const handleSubmit = () => {
-    console.log("Pushed to firestore");
-    setCount(count + 1);
-    addDoc(colRef, {
+    await createUserWithEmailAndPassword(auth, email, password)
+      .then(() => {
+        console.log("User registered");
+
+        addDoc(colRef, {
+          Name: name,
+          Contact: contact,
+          Email: email,
+          College: college,
+          City: city,
+          State: state,
+          Stay: stay,
+        }).then(() => {
+          setCity("");
+          setCollege("");
+          setContact("");
+          setEmail("");
+          setName("");
+          setState("");
+          setStay("");
+        });
+
+        console.log("Pushed to firestore");
+      })
+      .catch((error) => {
+        console.log(error.message);
+      });
+
+     
+    // setCount(count + 1);
       
-      Name: name,
-      Contact: contact,
-      Email: email,
-      College: college,
-      City: city,
-      State: state,
-      Stay: stay,
-    },)
-    .then(() => {
-      setCity("");
-      setCollege("");
-      setContact("");
-      setEmail("");
-      setName("");
-      setState("");
-      setStay("");
-    });
   };
 
   return (
@@ -110,7 +99,7 @@ const Signup = () => {
           {/* <div className="title-team">Team</div> */}
         </div>
         <div className="form-container">
-          <form action="#" className="individual" ref={reg}>
+          <form action="#" className="individual" ref={formRef}>
             <div>
               <input
                 id="name"
@@ -119,7 +108,8 @@ const Signup = () => {
                 className="field"
                 value={name}
                 ref={nameRef}
-                onChange={(e) => handleInputChange(e)}
+                // onChange={(e) => handleInputChange(e)}
+                onChange={(e) => setName(e.target.value)}
                 required
               />
             </div>
@@ -131,7 +121,8 @@ const Signup = () => {
                 className="field"
                 value={contact}
                 ref={contactRef}
-                onChange={(e) => handleInputChange(e)}
+                // onChange={(e) => handleInputChange(e)}
+                onChange={(e) => setContact(e.target.value)}
                 required
               />
             </div>
@@ -143,7 +134,8 @@ const Signup = () => {
                 className="field"
                 value={email}
                 ref={emailRef}
-                onChange={(e) => handleInputChange(e)}
+                // onChange={(e) => handleInputChange(e)}
+                onChange={(e) => setEmail(e.target.value)}
                 required
               />
             </div>
@@ -155,7 +147,8 @@ const Signup = () => {
                 className="field"
                 value={college}
                 ref={collegeRef}
-                onChange={(e) => handleInputChange(e)}
+                // onChange={(e) => handleInputChange(e)}
+                onChange={(e) => setCollege(e.target.value)}
                 required
               />
             </div>
@@ -167,7 +160,8 @@ const Signup = () => {
                 className="field"
                 value={city}
                 ref={cityRef}
-                onChange={(e) => handleInputChange(e)}
+                // onChange={(e) => handleInputChange(e)}
+                onChange={(e) => setCity(e.target.value)}
                 required
               />
             </div>
@@ -179,7 +173,8 @@ const Signup = () => {
                 className="field"
                 value={state}
                 ref={stateRef}
-                onChange={(e) => handleInputChange(e)}
+                // onChange={(e) => handleInputChange(e)}
+                onChange={(e) => setState(e.target.value)}
                 required
               />
             </div>
@@ -191,7 +186,8 @@ const Signup = () => {
                 className="field"
                 value={stay}
                 ref={stayRef}
-                onChange={(e) => handleInputChange(e)}
+                // onChange={(e) => handleInputChange(e)}
+                onChange={(e) => setStay(e.target.value)}
                 required
               />
             </div>
@@ -203,9 +199,19 @@ const Signup = () => {
                 // required
               />
             </div>
+            <div>
+              <input
+                type="password"
+                placeholder="Enter password"
+                className="field"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </div>
             <div className="button-container">
               <button
-                onClick={() => handleSubmit()}
+                onClick={(e) => handleSubmit(e)}
                 type="button"
                 className="button"
               >
